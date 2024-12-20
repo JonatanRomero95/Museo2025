@@ -1,0 +1,53 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+#filters {
+    margin-bottom: 20px;
+}
+
+label, input {
+    margin: 5px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    position: relative;
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card h3, .card p {
+    margin: 5px 0;
+}
+
+#pagination {
+    margin-top: 20px;
+}
