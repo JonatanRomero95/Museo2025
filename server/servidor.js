@@ -4,31 +4,44 @@ const translate = require("node-google-translate-skidz");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.static("public"));
+app.use(express.static("public")); 
+
+app.get("/api/departments", async (req, res) => {
+    try {
+        const response = await axios.get("https://collectionapi.metmuseum.org/public/collection/v1/departments");
+            const departments = response.data.departments;
+            res.json(departments);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "error fetching data from the museum API"});
+        }
+    });
 
 app.get("/api/objects", async (req, res) => {
-    const { departament, keyword, location, page = 1 } = req.query;
+    const { department, keyword, country, page = 1 } = req.query;
     const pageSize = 20;
-    const offset = (page - 1) = pageSize;
+    const offset = (page - 1) * pageSize;
 
     try {
-        let url = `https://collectionapi.metmuseum.org/public/collection/v1/objects?`;
-        if (departament) url += `departmentId=${department}&`;
-        if (keyword) url += `q=${keyword}&`;
-        if (location) url += `geography=${location}&`;
-        url += `start=${offset}&rows=${pageSize}`;
+        let url = `https://collectionapi.metmuseum.org/public/collection/v1/departments`;
+        //if (department) url += `department=${department}&`;
+        //if (keyword) url += `q=${keyword}&`;
+        //if (location) url += `country=${location}&`;
+        //url += `start=${offset}&rows=${pageSize}`;
 
         const response = await axios.get(url);
-        const objects = response.data.objectsIDs;
+        const objects = response.data.departments;
+        console.log(objects);
+
+        /*
 
         const objectDetails = await Promise.all(
-            objects.slice(0, pageSize).map(async (id) => {
+            objects.map(async (id) => {
                 const objectData = await axios.get(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`);
                 const data = objectData.data;
-
-                const titleTranslated = await translate(data.title, { to: "es" });
-                const cultureTranslated = await translate(data.culture, { to: "es" });
-                const dynastyTranslated = data.dynasty ? await translate(data - dynasty, { to: "es" }) : null;
+                const titleTranslated = (await translate(data.title, { to: "es" })).translatedText;
+                const cultureTranslated = (await translate(data.culture, { to: "es" })).translatedText;
+                const dynastyTranslated = data.dynasty ? await translate(data.dynasty, { to: "es" }) : null;
 
                 return {
                     id,
@@ -43,12 +56,13 @@ app.get("/api/objects", async (req, res) => {
         );
 
         res.json(objectDetails);
-
+*/
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Error fetching data from the museum API' });
     }
 });
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 })
