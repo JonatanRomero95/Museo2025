@@ -14,7 +14,7 @@ async function fetchObjects() {
         const keyword = keywordInput.value;
         const location = locationInput.value;
 
-        const url = `/api/objects?department=${department}&keyword=${keyword}&country=${location}&page=${currentPage}`;
+        const url = `/api/objects?department=${department}&keyword=${keyword}&location=${location}&page=${currentPage}`;
         const response = await fetch(url);
         const objects = await response.json();
 
