@@ -4,19 +4,31 @@ const keywordInput = document.getElementById("keyword");
 const locationInput = document.getElementById("location");
 const gallery = document.getElementById("gallery");
 const pagination = document.getElementById("pagination");
-
-let currentPage = 1;
-let totalPage = 1;
+const infoPage = document.getElementById("information-page");
+const nextBtn = document.getElementById("next");
+const previousBtn = document.getElementById("back");
+var pageIndex = 1;
 
 async function fetchObjects() {
     try {
-        const department = departmentInput.value;
-        const keyword = keywordInput.value;
-        const location = locationInput.value;
+        let department = departmentInput.value;
+        let keyword = keywordInput.value;
+        let location = locationInput.value;
 
-        const url = `/api/objects?department=${department}&keyword=${keyword}&location=${location}&page=${currentPage}`;
+        if(location)
+        {
+            location = location.charAt(0).toUpperCase() + location.slice(1);
+        }
+
+        const url = `/api/objects?department=${department}&keyword=${keyword}&location=${location}&page=${pageIndex}`;
         const response = await fetch(url);
-        const objects = await response.json();
+        const responseJSON = await response.json();
+
+        const objects = responseJSON.objects;
+
+        pageIndex = responseJSON.page;
+        infoPage.textContent = `${responseJSON.page}/${responseJSON.totalPage}`;
+        manageButtons(responseJSON);
 
         gallery.innerHTML = "";
         objects.forEach(obj => {
@@ -24,7 +36,7 @@ async function fetchObjects() {
             const card = document.createElement("div");
             card.classList.add("card");
             card.innerHTML = `
-            <img src="${obj.image}" alt="${obj.title}">
+            <img src="${obj.image}" alt="${obj.title}" class="imageNissan">
             <h3>${obj.title}</h3>
             <p><strong>Cultura:</strong> ${obj.culture}</p>
             <p><strong>Dinastía:</strong> ${obj.dynasty || 'N/A'}</p>
@@ -32,25 +44,11 @@ async function fetchObjects() {
             gallery.appendChild(card);
         });
 
-        totalPage = Math.ceil(objects.length / 20);
-        updatePagination();
     } catch (error) {
         console.log(error);
     }
 }
 
-function updatePagination() {
-    pagination.innerHTML = "";
-    for (let i = 1; i <= totalPage; i++) {
-        const pageBtn = document.createElement("button");
-        pageBtn.textContent = i;
-        pageBtn.addEventListener("click", () => {
-            currentPage = i;
-            fetchObjects();
-        });
-        pagination.appendChild(pageBtn);
-    }
-}
 
 async function fillOutDepartment() {
     try {
@@ -70,11 +68,40 @@ async function fillOutDepartment() {
     }
 }
 
+async function manageButtons(obj) {
+
+    if (pageIndex === 1) {
+        previousBtn.disabled = true;
+    } else {
+        previousBtn.disabled = false;
+    }
+
+    if (pageIndex === obj.totalPage) {
+        nextBtn.disabled = true;
+    } else {
+        nextBtn.disabled = false;
+    }
+}
+
+function advancePage(obj) {
+    pageIndex++;
+    fetchObjects();
+}
+
+function goBack(obj) {
+    pageIndex--;
+    fetchObjects();
+}
+
 searchBtn.onclick = () => {
-    currentPage = 1;
+    pageIndex = 1;
     fetchObjects();
 };
 
 fillOutDepartment();
+
+nextBtn.addEventListener("click", advancePage);
+previousBtn.addEventListener("click", goBack);
+
 
 //fetchObjects();
