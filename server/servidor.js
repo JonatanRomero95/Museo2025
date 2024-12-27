@@ -19,37 +19,20 @@ app.get("/api/departments", async (req, res) => {
 
 app.get("/api/objects", async (req, res) => {
     const { department, keyword, location, page } = req.query;
-    let departmentObjectsIds = [];
-    let keyWordLocationObjectsIds = [];
     let filter = [];
     const rows = 20;
-    
+
     if (!page) {
         page = 1;
     }
 
     try {
-        if (department) {
-            let url = `https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds=${department}`;
-            const response = await axios.get(url);
-            response.data.objectIDs.forEach(id => departmentObjectsIds.push(id));
-        }
-
-        if (keyword || location) {
-            const isLocation = location ? `geoLocation=${location}` : "";
-            const isKeyword = keyword ? `q=${keyword}` : 'q=""';
-            let url = `https://collectionapi.metmuseum.org/public/collection/v1/search?${isLocation}&${isKeyword}`;
-            const response = await axios.get(url);
-            response.data.objectIDs.forEach(id => keyWordLocationObjectsIds.push(id));
-        }
-
-        if (department && (keyword || location)) {
-            filter = departmentObjectsIds.filter(id => keyWordLocationObjectsIds.includes(id));
-        } else if (department) {
-            filter = departmentObjectsIds;
-        } else if (keyword || location) {
-            filter = keyWordLocationObjectsIds;
-        }
+        const isDepartment = department ? `departmentIds=${department};` : "";
+        const isLocation = location ? `geoLocation=${location};` : "";
+        const isKeyword = keyword ? `q=${keyword};` : 'q=""';
+        let url = `https://collectionapi.metmuseum.org/public/collection/v1/search?${isDepartment}"&${isLocation}&${isKeyword}`;
+        const response = await axios.get(url);
+        response.data.objectIDs.forEach(id => filter.push(id));
 
         const totalPage = Math.ceil(filter.length / rows);
 
@@ -97,10 +80,9 @@ app.get("/api/objects", async (req, res) => {
 function chunkResponse(filter, page = 1, rows = 20) {
     const start = (page - 1) * rows;
     const end = start + rows;
-    console.log(start+ " ola " + end);
     return filter.slice(start, end);
 }
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
-})
+});
